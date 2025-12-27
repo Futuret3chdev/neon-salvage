@@ -41,12 +41,6 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
-      "page": "/api/node_modules/fastify/lib",
-      "regex": "^/api/node_modules/fastify/lib(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/api/node_modules/fastify/lib(?:/)?$"
-    },
-    {
       "page": "/api/spin",
       "regex": "^/api/spin(?:/)?$",
       "routeKeys": {},
