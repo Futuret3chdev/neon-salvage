@@ -1,0 +1,16 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.5.0",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^17.2.3",
+    "fastify": "^4.28.1",
+    "nanoid": "^5.0.6"
+  }
+}
