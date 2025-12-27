@@ -1,0 +1,31 @@
+body {
+  margin: 0;
+  background: #0a0f1f;
+  color: #e6f7ff;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+#app {
+  padding: 20px;
+}
+
+#reels {
+  margin: 20px 0;
+  font-size: 48px;
+}
+
+.reel {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+button {
+  padding: 14px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00f6ff, #ff00e6);
+  color: #000;
+  cursor: pointer;
+}
