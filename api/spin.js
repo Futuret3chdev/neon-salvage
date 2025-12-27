@@ -1,4 +1,4 @@
-import { verifyTelegramInitData } from "../telegramAuth.js";
+import { verifyTelegramInitData } from "./telegramAuth.js";
 
 
 /**
