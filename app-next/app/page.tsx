@@ -3,17 +3,14 @@
 import { useEffect, useState } from "react";
 import Reel from "../components/Reel";
 import { shakeScreen } from "../lib/shake";
-
-const API_URL =
-  process.env.NODE_ENV === "development"
-    ? "https://neon-salvage.vercel.app/api/spin"
-    : "/api/spin";
+import CoinBurst from "../components/CoinBurst";
 
 export default function Home() {
   const [energy, setEnergy] = useState(10);
   const [status, setStatus] = useState("");
   const [spinning, setSpinning] = useState(false);
   const [reels, setReels] = useState(["?", "?", "?"]);
+  const [burst, setBurst] = useState(0);
 
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
@@ -24,14 +21,46 @@ export default function Home() {
   }, []);
 
   async function extract() {
-    const tg = (window as any).Telegram?.WebApp;
-    if (!tg || spinning) return;
+    if (spinning) return;
 
     setSpinning(true);
     setStatus("Extracting…");
 
+    const tg = (window as any).Telegram?.WebApp;
+    const isTelegram = !!tg?.initData;
+
+    /* =====================================================
+       🟢 PUBLIC DEMO MODE (Vercel / Browser / Remote Team)
+       ===================================================== */
+    if (!isTelegram) {
+      const mockReels = ["CR10", "CR20", "CR40"];
+      const mockReward = 70;
+
+      setTimeout(() => setReels((r) => [mockReels[0], r[1], r[2]]), 600);
+      setTimeout(() => setReels((r) => [r[0], mockReels[1], r[2]]), 900);
+      setTimeout(() => setReels((r) => [r[0], r[1], mockReels[2]]), 1200);
+
+      // impact moment
+      setTimeout(() => {
+        shakeScreen(6, 300);
+      }, 1200);
+
+      // settle + reward
+      setTimeout(() => {
+        setEnergy((e) => Math.max(0, e - 1));
+        setStatus(`+${mockReward} CR`);
+        setBurst(Math.min(12, Math.max(6, Math.floor(mockReward / 10))));
+        setSpinning(false);
+      }, 1400);
+
+      return;
+    }
+
+    /* =====================================================
+       🔵 TELEGRAM MODE (REAL API)
+       ===================================================== */
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch("/api/spin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ initData: tg.initData }),
@@ -45,24 +74,26 @@ export default function Home() {
         return;
       }
 
-      // staggered reel stop (AAA timing)
       setTimeout(() => setReels((r) => [data.reels[0], r[1], r[2]]), 600);
       setTimeout(() => setReels((r) => [r[0], data.reels[1], r[2]]), 900);
       setTimeout(() => setReels((r) => [r[0], r[1], data.reels[2]]), 1200);
 
+      // impact moment
       setTimeout(() => {
-  setEnergy(data.energy);
-  setStatus(`+${data.reward} CR`);
+        if (data.reward >= 100) {
+          shakeScreen(10, 420); // big win
+        } else {
+          shakeScreen(6, 300);
+        }
+      }, 1200);
 
-  if (data.reward >= 100) {
-    shakeScreen(8, 400); // big win
-  } else {
-    shakeScreen(4, 250);
-  }
-
-  setSpinning(false);
-}, 1400);
-
+      // settle + reward
+      setTimeout(() => {
+        setEnergy(data.energy);
+        setStatus(`+${data.reward} CR`);
+        setBurst(Math.min(18, Math.max(6, Math.floor(data.reward / 10))));
+        setSpinning(false);
+      }, 1400);
     } catch (err) {
       console.error(err);
       setStatus("Server error");
@@ -71,7 +102,15 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-[#0b1020] to-black">
+    <main className="min-h-screen flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-[#0b1020] to-black overflow-hidden">
+      {/* 💰 Coin burst layer */}
+      {burst > 0 && (
+        <CoinBurst
+          count={burst}
+          onDone={() => setBurst(0)}
+        />
+      )}
+
       <h1 className="text-cyan-400 text-2xl tracking-widest font-bold">
         NEON SALVAGE
       </h1>
