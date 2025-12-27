@@ -1,65 +1,70 @@
 const tg = window.Telegram?.WebApp;
-
-// Make sure we are inside Telegram
-if (!tg) {
-  document.getElementById("status").innerText =
-    "This app must be opened from Telegram";
-} else {
-  tg.expand();
-}
+if (tg) tg.expand();
 
 const spinBtn = document.getElementById("spinBtn");
 const status = document.getElementById("status");
 const reels = document.querySelectorAll(".reel");
 const energyEl = document.getElementById("energy");
 
-// ✅ Live Vercel API endpoint
 const API_URL = "https://neon-salvage.vercel.app/api/spin";
 
+function startSpinAnimation() {
+  reels.forEach(r => {
+    r.classList.add("spinning");
+    r.innerText = ["CR10", "CR20", "CR40", "MOD"][Math.floor(Math.random() * 4)];
+  });
+}
+
+function stopReel(reel, value, delay) {
+  setTimeout(() => {
+    reel.classList.remove("spinning");
+    reel.innerText = value;
+  }, delay);
+}
+
 spinBtn.onclick = async () => {
-  if (!tg || !tg.initData) {
-    status.innerText = "Telegram init data missing";
+  if (!tg) {
+    status.innerText = "Telegram not detected";
     return;
   }
 
+  spinBtn.disabled = true;
   status.innerText = "Extracting...";
+
+  startSpinAnimation();
 
   try {
     const res = await fetch(API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         initData: tg.initData
       })
     });
 
-    let data;
-    try {
-      data = await res.json();
-    } catch {
-      status.innerText = "Invalid server response";
+    const data = await res.json();
+
+    if (data.error) {
+      status.innerText = data.error;
+      spinBtn.disabled = false;
       return;
     }
 
-    // ❌ API-level error
-    if (!res.ok) {
-      status.innerText = data.error || "API error";
-      console.error("API ERROR:", data);
-      return;
-    }
+    // staggered reel stop (slot feel)
+    stopReel(reels[0], data.reels[0], 600);
+    stopReel(reels[1], data.reels[1], 1000);
+    stopReel(reels[2], data.reels[2], 1400);
 
-    // ✅ Successful spin
-    reels.forEach((r, i) => {
-      r.innerText = data.reels[i] || "▣";
-    });
-
-    energyEl.innerText = data.energy;
-    status.innerText = `+${data.reward} CR`;
+    setTimeout(() => {
+      energyEl.innerText = data.energy;
+      status.innerText = `+${data.reward} CR`;
+      spinBtn.disabled = false;
+    }, 1500);
 
   } catch (err) {
-    console.error("NETWORK ERROR:", err);
-    status.innerText = "Network / CORS error";
+    console.error(err);
+    status.innerText = "Server error";
+    reels.forEach(r => r.classList.remove("spinning"));
+    spinBtn.disabled = false;
   }
 };
