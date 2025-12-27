@@ -45,9 +45,10 @@ export default function CoinBurst({
             scale: [0.6, 1, 0.9],
           }}
           transition={{
-            duration: 1.2,
-            ease: "cubic-bezier(0.22, 1, 0.36, 1)",
-          }}
+			duration: 1.2,
+			ease: [0.22, 1, 0.36, 1],
+			}}
+
           onAnimationComplete={onDone}
         >
           <MTCoin size={22 + Math.random() * 10} />
