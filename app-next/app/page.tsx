@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Reel from "../components/Reel";
+import { shakeScreen } from "../lib/shake";
 
 const API_URL =
   process.env.NODE_ENV === "development"
@@ -50,10 +51,18 @@ export default function Home() {
       setTimeout(() => setReels((r) => [r[0], r[1], data.reels[2]]), 1200);
 
       setTimeout(() => {
-        setEnergy(data.energy);
-        setStatus(`+${data.reward} CR`);
-        setSpinning(false);
-      }, 1400);
+  setEnergy(data.energy);
+  setStatus(`+${data.reward} CR`);
+
+  if (data.reward >= 100) {
+    shakeScreen(8, 400); // big win
+  } else {
+    shakeScreen(4, 250);
+  }
+
+  setSpinning(false);
+}, 1400);
+
     } catch (err) {
       console.error(err);
       setStatus("Server error");

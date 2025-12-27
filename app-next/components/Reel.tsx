@@ -40,11 +40,13 @@ export default function Reel({
       await controls.start({
         y: 0,
         transition: {
-          delay,
-          type: "spring",
-          stiffness: 180,
-          damping: 18,
-        },
+  delay,
+  type: "spring",
+  stiffness: 260,
+  damping: 14,
+  mass: 0.8,
+},
+
       });
     }
 
